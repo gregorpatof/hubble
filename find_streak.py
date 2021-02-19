@@ -159,10 +159,10 @@ def move_limit_images_back():
 
 
 def make_jobs():
-    seeds = glob.glob('seeds/*.tif')
+    seeds = glob.glob('seeds/*.tiff')
     jobnames = []
     for seed in seeds:
-        name = seed.split('/')[-1][:-4]
+        name = seed.split('/')[-1][:-5]
         jobname = "job_{}.sh".format(name)
         jobnames.append(jobname)
         with open("jobs/{}".format(jobname), "w") as f:
