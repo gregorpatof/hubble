@@ -10,6 +10,7 @@ import random
 from image_container import ImageContainer
 from multiprocessing import Pool
 from itertools import repeat
+from stringfish import strexe
 
 
 def get_sub_rectangle(img, x, y, x_length=720, y_length=1280, angle=0):
@@ -120,15 +121,34 @@ def write_cut_images(filename, target_size=3000):
             counter += 1
 
 
+def move_limit_images_back():
+    cut_filenames = glob.glob("cut_images/*.tif")
+    n_dict = dict()
+    for cf in cut_filenames:
+        key = cf.split('/')[-1].split('_')[0]
+        if key in n_dict:
+            n_dict[key] += 1
+        else:
+            n_dict[key] = 1
+    for key in n_dict:
+        if n_dict[key] < 5:
+            strexe("rm cut_images/{}*.tif".format(key))
+            filenames = glob.glob("raw_images/{}*.tif".format(key))
+            assert len(filenames) == 1
+            shutil.copyfile(filenames[0], "cut_images/{}_0.tif".format(key))
+
+
+
 
 
 
 
 
 if __name__ == "__main__":
-    filenames = glob.glob("raw_images/*.tif")
-    for filename in filenames:
-        write_cut_images(filename)
+    # filenames = glob.glob("raw_images/*.tif")
+    # for filename in filenames:
+    #     write_cut_images(filename)
+    move_limit_images_back()
 
     # img_containers = [ImageContainer(img, param_type='point')]
 
