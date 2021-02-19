@@ -127,7 +127,7 @@ if __name__ == "__main__":
 
 
 
-    closest_10, dists = find_closest(10, main_sub, img_containers)
+    closest_10, dists = find_closest(10, main_sub, img_containers, step=600)
     dirpath = "color_distance"
     for i, closest in enumerate(closest_10):
         cv.imwrite("{}/img{:03d}.tif".format(dirpath, i), closest)
