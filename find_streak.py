@@ -27,13 +27,15 @@ def make_rotated(img):
     return rotated
 
 
-def scan_image(target_image, img_container, x_length=720, y_length=1280, step=100):
+def scan_image(target_image, img_container, remove_rectangle=False,
+               x_length=720, y_length=1280, step=100):
+
     scan_coords = [0, img_container.height, 0, img_container.width]
     min_dist, best_img, best_coords = scan_image_helper(target_image, img_container, scan_coords,
-                                                        x_length, y_length, step)
+                                                        remove_rectangle, x_length, y_length, step)
     return min_dist, best_img, best_coords
 
-def scan_image_helper(target_image, img_container, scan_coords,
+def scan_image_helper(target_image, img_container, scan_coords, remove_rectangle=False,
                       x_length=720, y_length=1280, step=200):
     """ scan_coords = [x_start, x_end, y_start, y_end]
     """
@@ -46,7 +48,7 @@ def scan_image_helper(target_image, img_container, scan_coords,
         if x1+x_length >= scan_coords[1]:
             break
         for y1 in range(scan_coords[2], scan_coords[3], step):
-            if y1+y_length >= width:
+            if y1+y_length >= scan_coords[3]:
                 break
             sub_img = img_container.get_sub_img(x1, y1, x1+x_length, y1+y_length)
             if sub_img is not None:
@@ -54,7 +56,10 @@ def scan_image_helper(target_image, img_container, scan_coords,
                 if dist < min_dist:
                     min_dist = dist
                     best_match = sub_img
-                    best_coords = [x1, y1, x1+x_length, y1+y_length]
+                    if remove_rectangle:
+                        best_coords = [x1, y1, x1+x_length, y1+y_length]
+                    else:
+                        best_coords = [x1, y1, x1 +2, y1 + 2]
     return min_dist, best_match, best_coords
 
 
@@ -67,20 +72,24 @@ def get_distance(img1, img2):
 
 
 
-def find_closest(n_closest, starting_image, img_containers, n_procs = 4):
+def find_closest(n_closest, starting_image, img_containers, remove_rectangle=False, n_procs = 4):
     closest = [starting_image]
     dists = [0]
     current_image = starting_image
     for i in range(1, n_closest):
         results = []
         for img_container in img_containers:
-            results.append(scan_image(current_image, img_container))
+            results.append(scan_image(current_image, img_container, remove_rectangle=remove_rectangle))
         # results = p.starmap(scan_image, zip(repeat(current_image), img_containers))
         min_dist, best_img, best_coords, best_j = get_best_result(results)
-        img_containers[best_j].add_rectangle(*best_coords)
+        if remove_rectangle:
+            img_containers[best_j].add_rectangle(*best_coords)
+        else:
+            img_containers[best_j].add_rectangle(best_coords[0], best_coords[1], best_coords[0]+2, best_coords[1]+2)
         closest.append(best_img)
         dists.append(min_dist)
         print(i, min_dist)
+        current_image = best_img
     return closest, dists
 
 
@@ -102,6 +111,7 @@ def get_best_result(results):
 if __name__ == "__main__":
     # img = cv.imread("raw_images/heic0707a.tif")
     img = cv.imread("raw_images/heic1808a.tif")
+    # img = cv.imread("raw_images/heic1307a.tif")
     print("img loaded")
     # rotated = make_rotated(img)
     img_containers = [ImageContainer(img)]
@@ -110,13 +120,27 @@ if __name__ == "__main__":
     x1_main = int(len(img)/2)-1600
     y1_main = int(len(img[0])/2)-300
     main_sub = get_sub_rectangle(img, x1_main, y1_main)
-    img_containers[0].add_rectangle(x1_main, y1_main, x1_main+x_length-1, y1_main+y_length-1)
+    # img_containers[0].add_rectangle(x1_main, y1_main, x1_main+x_length-1, y1_main+y_length-1)
+    img_containers[0].add_rectangle(x1_main, y1_main, x1_main+2, y1_main+2)
     # for r in rotated:
     #     img_containers.append(ImageContainer(rotated))
-    closest_10, dists = find_closest(10, main_sub, img_containers)
-    dirpath = "color_distance"
-    for i, closest in enumerate(closest_10):
-        cv.imwrite("{}/img{:03d}.tif".format(dirpath, i), closest)
+
+
+
+    # closest_100, dists = find_closest(100, main_sub, img_containers)
+    # dirpath = "color_distance"
+    # for i, closest in enumerate(closest_100):
+    #     cv.imwrite("{}/img{:03d}.tif".format(dirpath, i), closest)
+
+    warped = []
+    for theta in np.arange(0, np.pi, step=np.pi/8):
+        for flip in [True, False]:
+            warped.append(img_containers[0].get_sub_img_rotated_rect([2500, 2500], theta, flipped=flip))
+    for i, w in enumerate(warped):
+        cv.imwrite("warped{}.tif".format(i), w)
+
+    # cv.imwrite("warped.tif", warped)
+
 
 
 
