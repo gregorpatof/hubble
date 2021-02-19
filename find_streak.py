@@ -198,24 +198,27 @@ if __name__ == "__main__":
     #     write_cut_images(filename)
     # move_limit_images_back()
 
-    make_jobs()
+    # make_jobs()
 
-    # seed_filename = sys.argv[1]
-    # name = seed_filename.split('/')[-1].split('_')[0]
-    # if not os.path.isdir('output'):
-    #     os.mkdir('output')
-    # output_dir = 'output/{}'.format(seed_filename.split('/')[-1].split('.')[0])
-    # if not os.path.isdir(output_dir):
-    #     os.mkdir('output/{}'.format(seed_filename.split('/')[-1].split('.')[0]))
-    #
-    #
-    # seed_img = cv.imread(seed_filename)
-    # cut_images_fns = glob.glob("cut_images/{}*".format(name))
-    # img_containers = []
-    # for cut_image_fn in cut_images_fns:
-    #     img_containers.append(ImageContainer(cv.imread(cut_image_fn), param_type='point'))
-    #
-    # find_closest(250, seed_img, img_containers, output_dir, step=600)
+    if len(sys.argv) != 2:
+        raise ValueError("I need 1 arg, the seed filename")
+
+    seed_filename = sys.argv[1]
+    name = seed_filename.split('/')[-1].split('_')[0]
+    if not os.path.isdir('output'):
+        os.mkdir('output')
+    output_dir = 'output/{}'.format(seed_filename.split('/')[-1].split('.')[0])
+    if not os.path.isdir(output_dir):
+        os.mkdir('output/{}'.format(seed_filename.split('/')[-1].split('.')[0]))
+
+
+    seed_img = cv.imread(seed_filename)
+    cut_images_fns = glob.glob("cut_images/{}*".format(name))
+    img_containers = []
+    for cut_image_fn in cut_images_fns:
+        img_containers.append(ImageContainer(cv.imread(cut_image_fn), param_type='point'))
+
+    find_closest(250, seed_img, img_containers, output_dir, step=600)
 
 
 
