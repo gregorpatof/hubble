@@ -132,7 +132,7 @@ def move_limit_images_back():
             n_dict[key] = 1
     print(n_dict)
     for key in n_dict:
-        if n_dict[key] < 5:
+        if n_dict[key] < 3:
             to_delete = glob.glob("cut_images/{}*.tif".format(key))
             for fn in to_delete:
                 print(strexe("rm {}".format(fn)))
@@ -148,9 +148,9 @@ def move_limit_images_back():
 
 
 if __name__ == "__main__":
-    # filenames = glob.glob("raw_images/*.tif")
-    # for filename in filenames:
-    #     write_cut_images(filename)
+    filenames = glob.glob("raw_images/*.tif")
+    for filename in filenames:
+        write_cut_images(filename)
     move_limit_images_back()
 
     # img_containers = [ImageContainer(img, param_type='point')]
