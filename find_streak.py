@@ -158,6 +158,34 @@ def move_limit_images_back():
             shutil.copyfile(filenames[0], "cut_images/{}_0.tif".format(key))
 
 
+def make_jobs():
+    seeds = glob.glob('seeds/*.tif')
+    jobnames = []
+    for seed in seeds:
+        name = seed.split('/')[-1][:-4]
+        jobname = "job_{}.sh".format(name)
+        jobnames.append(jobname)
+        with open("jobs/{}".format(jobname), "w") as f:
+            f.write("""#!/bin/bash
+#SBATCH --ntasks=40
+#SBATCH --nodes=1
+#SBATCH --exclusive
+#SBATCH --output=SLURM-%x.%j.out
+#SBATCH --error=SLURM-%x.%j.err
+#SBATCH --mem=0
+#SBATCH --time=24:00:00
+#SBATCH --account=rrg-najmanov
+module purge
+source ~/py_env/bin/activate
+cd ..
+python find_streak.py {}
+""".format(seed))
+    with open("jobs/start_jobs.sh", "w") as f:
+        for jobname in jobnames:
+            f.write("sbatch {}\n".format(jobname))
+
+
+
 
 
 
@@ -170,41 +198,29 @@ if __name__ == "__main__":
     #     write_cut_images(filename)
     # move_limit_images_back()
 
-    seed_filename = sys.argv[1]
-    name = seed_filename.split('/')[-1].split('_')[0]
-    if not os.path.isdir('output'):
-        os.mkdir('output')
-    output_dir = 'output/{}'.format(seed_filename.split('/')[-1].split('.')[0])
-    if not os.path.isdir(output_dir):
-        os.mkdir('output/{}'.format(seed_filename.split('/')[-1].split('.')[0]))
+    make_jobs()
 
-
-    seed_img = cv.imread(seed_filename)
-    cut_images_fns = glob.glob("cut_images/{}*".format(name))
-    img_containers = []
-    for cut_image_fn in cut_images_fns:
-        img_containers.append(ImageContainer(cv.imread(cut_image_fn), param_type='point'))
-
-    find_closest(250, seed_img, img_containers, output_dir, step=600)
-
-
-
-
-
-
-
-    # img_containers = [ImageContainer(img, param_type='point')]
+    # seed_filename = sys.argv[1]
+    # name = seed_filename.split('/')[-1].split('_')[0]
+    # if not os.path.isdir('output'):
+    #     os.mkdir('output')
+    # output_dir = 'output/{}'.format(seed_filename.split('/')[-1].split('.')[0])
+    # if not os.path.isdir(output_dir):
+    #     os.mkdir('output/{}'.format(seed_filename.split('/')[-1].split('.')[0]))
+    #
+    #
+    # seed_img = cv.imread(seed_filename)
+    # cut_images_fns = glob.glob("cut_images/{}*".format(name))
+    # img_containers = []
+    # for cut_image_fn in cut_images_fns:
+    #     img_containers.append(ImageContainer(cv.imread(cut_image_fn), param_type='point'))
+    #
+    # find_closest(250, seed_img, img_containers, output_dir, step=600)
 
 
 
 
 
-
-
-    # closest_10, dists = find_closest(10, main_sub, img_containers, step=600)
-    # dirpath = "color_distance"
-    # for i, closest in enumerate(closest_10):
-    #     cv.imwrite("{}/img{:03d}.tif".format(dirpath, i), closest)
 
 
 
