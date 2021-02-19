@@ -105,41 +105,32 @@ def get_best_result(results):
     return min_dist, best_img, best_coords, best_j
 
 
+def write_cut_images(filename, target_size=3000):
+    img = cv.imread(filename)
+    name = filename.split('/')[-1][:-4]
+    height = img.shape[0]
+    width = img.shape[1]
+    if height < target_size or width < target_size:
+        return
+    counter = 0
+    for i in range(0, height-target_size, target_size):
+        for j in range(0, width-target_size, target_size):
+            cv.imwrite("cut_images/{}_{}.tif".format(name, counter), img[i:i+target_size, j:j+target_size])
+            print(counter)
+            counter += 1
+
+
+
+
+
+
 
 if __name__ == "__main__":
-    # img = cv.imread("raw_images/heic0707a.tif")
-    # img = cv.imread("raw_images/heic1808a.tif")
-    img = cv.imread("raw_images/heic1307a.tif")
-    print("img loaded")
-    # rotated = make_rotated(img)
-    img_containers = [ImageContainer(img, param_type='point')]
-    x_length = 720
-    y_length = 1280
-    # x1_main = int(len(img)/2)-1600
-    # y1_main = int(len(img[0])/2)-300
-    x1_main = int(len(img) / 2)
-    y1_main = int(len(img[0]) / 2)
-    main_sub = get_sub_rectangle(img, x1_main, y1_main)
-    # img_containers[0].add_rectangle(x1_main, y1_main, x1_main+x_length-1, y1_main+y_length-1)
-    img_containers[0].add_rectangle(x1_main, y1_main, x1_main+2, y1_main+2)
-    # for r in rotated:
-    #     img_containers.append(ImageContainer(rotated))
+    filenames = glob.glob("raw_images/*.tif")
+    for filename in filenames:
+        write_cut_images(filename)
 
-
-
-    closest_10, dists = find_closest(10, main_sub, img_containers, step=600)
-    dirpath = "color_distance"
-    for i, closest in enumerate(closest_10):
-        cv.imwrite("{}/img{:03d}.tif".format(dirpath, i), closest)
-
-    # warped = []
-    # for theta in np.arange(0, np.pi, step=np.pi/8):
-    #     for flip in [True, False]:
-    #         warped.append(img_containers[0].get_sub_img_rotated_rect([2500, 2500], theta, flipped=flip))
-    # for i, w in enumerate(warped):
-    #     cv.imwrite("warped{}.tif".format(i), w)
-
-    # cv.imwrite("warped.tif", warped)
+    # img_containers = [ImageContainer(img, param_type='point')]
 
 
 
@@ -147,9 +138,12 @@ if __name__ == "__main__":
 
 
 
+    # closest_10, dists = find_closest(10, main_sub, img_containers, step=600)
+    # dirpath = "color_distance"
+    # for i, closest in enumerate(closest_10):
+    #     cv.imwrite("{}/img{:03d}.tif".format(dirpath, i), closest)
 
 
 
-    # cv.imshow('image', sub)
-    # cv.waitKey(0)
-    # cv.destroyAllWindows()
+
+
