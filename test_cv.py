@@ -55,7 +55,7 @@ def get_edges(filename, target_proportion=0.01):
     cv.imwrite("edges/{}".format(filename.split('/')[-1]), best_edges)
 
 
-def get_black_white(filename, target_proportion=0.5):
+def get_black_white_explore(filename, target_proportion=0.5):
     print(filename)
     img = cv.imread(filename)
     img = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
@@ -74,6 +74,16 @@ def get_black_white(filename, target_proportion=0.5):
             best_black_white = black_white
     print(best_prop, lowest_error, best_thresh)
     cv.imwrite("black_white/{}".format(filename.split('/')[-1]), best_black_white)
+    return best_thresh
+
+def get_black_white(filename, thresh=62):
+    print(filename)
+    img = cv.imread(filename)
+    img = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+    dum, black_white = cv.threshold(img, thresh, 255, cv.THRESH_BINARY)
+    prop = get_white_proportion(black_white)
+    if prop > 0.2 and prop < 0.8:
+        cv.imwrite("black_white/{}".format(filename.split('/')[-1]), black_white)
 
 
 
@@ -94,6 +104,14 @@ def get_edges_similarity(edges_1, edges_2):
     return similarity
 
 
+def get_bw_distance(bw1, bw2):
+    max_value = len(bw1) * len(bw1[0])*255
+    # similarity_white = cv.bitwise_and(bw1, bw2)
+    # similarity_black = cv.bitwise_not(cv.bitwise_or(bw1, bw2))
+    similarity = cv.bitwise_not(cv.bitwise_xor(bw1, bw2))
+    return 1 - np.sum(similarity)/max_value
+
+
 def get_closest(dist_mat, labels, start_i, n_imgs=100):
     taken = {start_i}
     imgs = [labels[start_i]]
@@ -105,12 +123,15 @@ def get_closest(dist_mat, labels, start_i, n_imgs=100):
             if j in taken:
                 continue
             elem = dist_mat[current_i][j]
+            if elem == 0:
+                continue
             if elem < min_dist:
                 min_dist = elem
                 min_j = j
         print(min_dist)
         imgs.append(labels[min_j])
         taken.add(min_j)
+        current_i = min_j
     return imgs
 
 
@@ -130,11 +151,8 @@ if __name__ == "__main__":
     # [get_edges(img) for img in decomposed_imgs]
 
     # étape 2B, images noir blanc
-    decomposed_imgs = glob.glob("decomposed_images/*.tif")
-    random_imgs = set()
-    for i in range(10):
-        random_imgs.add(random.choice(decomposed_imgs))
-    [get_black_white(filename) for filename in random_imgs]
+    # decomposed_imgs = glob.glob("decomposed_images/*.tif")
+    # [get_black_white(filename) for filename in decomposed_imgs]
 
     # étape 3, construction de la matrice de distance
     # edges_files = glob.glob("edges/*.tif")
@@ -151,8 +169,20 @@ if __name__ == "__main__":
     # np.savetxt("distmat.txt", dist_mat)
 
     # étape 3B, construction de la matrice
-    bw_files = glob.glob("black_white/*.tif")
-    bw = [cv.imread(filename, 0) for filename in bw_files]
+
+    # bw_files = glob.glob("black_white/*.tif")
+    # bw = [cv.imread(filename, 0) for filename in bw_files]
+    # n = len(bw)
+    # dist_mat = np.zeros((n, n))
+    # for i in range(n):
+    #     for j in range(i, n):
+    #         dist = get_bw_distance(bw[i], bw[j])
+    #         dist_mat[i][j] = dist_mat[j][i] = dist
+    #     print(i)
+    # with open("bw_labels.json", "w") as f:
+    #     json.dump(bw_files, f)
+    # np.savetxt("bw_distmat.txt", dist_mat)
+
 
 
 
@@ -170,15 +200,16 @@ if __name__ == "__main__":
     #             min_sum = elem
     #             min_i = i
     # print(min_sum, labels[min_i])
-    # min_i = None
-    # for i, l in enumerate(labels):
-    #     if l.endswith("heic0707a_4320_10240.tif"):
-    #         min_i = i
-    #         print("bingo")
+    # # min_i = None
+    # # for i, l in enumerate(labels):
+    # #     if l.endswith("heic0707a_4320_10240.tif"):
+    # #         min_i = i
+    # #         print("bingo")
     # closest_100 = get_closest(dist_mat, labels, min_i)
     # for i, img in enumerate(closest_100):
     #     name = img.split('/')[-1]
     #     shutil.copyfile("decomposed_images/{}".format(name), "output/{:03d}.tif".format(i))
+    #     print(i)
 
     # étape 5, clustering
     # n_clusters = 10
@@ -191,6 +222,38 @@ if __name__ == "__main__":
     #     name = label.split('/')[-1]
     #     shutil.copyfile("decomposed_images/{}".format(name), "clusters/{}/{}".format(clust_labels[i], name))
 
+
+
+    # étape 4B, exploration
+
+    dist_mat_bw = np.loadtxt("bw_distmat.txt")
+    with open("bw_labels.json") as f:
+        bw_labels = json.load(f)
+    min_sum = float('inf')
+    min_i = None
+    # for i in range(len(dist_mat_bw)):
+    #     s = 0
+    #     for elem in dist_mat_bw[i]:
+    #         s += elem
+    #     if s < min_sum:
+    #         min_sum = s
+    #         min_i = i
+    for i in range(len(dist_mat_bw)):
+        s = 0
+        for elem in dist_mat_bw[i]:
+            if elem > 0.01 and elem < min_sum:
+                min_sum = elem
+                min_i = i
+    print(min_sum, bw_labels[min_i], min_i)
+    closest_100 = get_closest(dist_mat_bw, bw_labels, min_i)
+    for i, img in enumerate(closest_100):
+        name = img.split('/')[-1]
+        shutil.copyfile("decomposed_images/{}".format(name), "output/{:03d}.tif".format(i))
+        shutil.copyfile("black_white/{}".format(name), "output_bw/{:03d}.tif".format(i))
+
+    # bw1 = cv.imread("output_bw/035.tif", 0)
+    # bw2 = cv.imread("output_bw/034.tif", 0)
+    # print(get_bw_distance(bw1, bw2))
 
 
 
