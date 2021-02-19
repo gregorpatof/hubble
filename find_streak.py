@@ -133,7 +133,9 @@ def move_limit_images_back():
     print(n_dict)
     for key in n_dict:
         if n_dict[key] < 5:
-            print(strexe("rm cut_images/{}*.tif".format(key)))
+            to_delete = glob.glob("cut_images/{}*.tif".format(key))
+            for fn in to_delete:
+                print(strexe("rm {}".format(fn)))
             filenames = glob.glob("raw_images/{}*.tif".format(key))
             assert len(filenames) == 1
             shutil.copyfile(filenames[0], "cut_images/{}_0.tif".format(key))
