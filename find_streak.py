@@ -165,10 +165,10 @@ def move_limit_images_back():
 
 
 if __name__ == "__main__":
-    filenames = glob.glob("raw_images/*.tif")
-    for filename in filenames:
-        write_cut_images(filename)
-    move_limit_images_back()
+    # filenames = glob.glob("raw_images/*.tif")
+    # for filename in filenames:
+    #     write_cut_images(filename)
+    # move_limit_images_back()
 
     seed_filename = sys.argv[1]
     name = seed_filename.split('/')[-1].split('_')[0]
