@@ -1,11 +1,9 @@
 import numpy as np
 import cv2 as cv
-from matplotlib import pyplot as plt
 import imutils
 import glob
 import json
 import sys
-from sklearn.cluster import AgglomerativeClustering
 import shutil
 import os
 import random
