@@ -15,12 +15,16 @@ class ImageContainer:
         self.rectangles.append([x1, y1, x2, y2])
 
     def add_params(self, params):
+        self.params.add(self.transform_params(params))
+
+    def transform_params(self, params):
         if self.param_type == 'all':
-            self.params.add((params[0][0], params[0][1], params[1], params[2]))
+            return (params[0][0], params[0][1], params[1], params[2])
         elif self.param_type == 'point':
-            self.params.add((params[0][0], params[0][1]))
+            return (params[0][0], params[0][1])
         else:
             raise ValueError("Unsupported param type: {}".format(self.param_type))
+
 
     def get_sub_img(self, x1, y1, x2, y2):
         for rect in self.rectangles:
@@ -29,7 +33,7 @@ class ImageContainer:
         return self.img[x1:x2, y1:y2]
 
     def get_sub_img_rotated_rect(self, center, angle, flipped=False, height=720, width=1280):
-        if (center[0], center[1], angle, flipped) in self.params:
+        if self.transform_params([center, angle, flipped]) in self.params:
             return None
         corners = get_rotated_corners(center, angle, height, width)
         if not self.contain(corners):
