@@ -185,7 +185,7 @@ if __name__ == "__main__":
     for cut_image_fn in cut_images_fns:
         img_containers.append(ImageContainer(cv.imread(cut_image_fn), param_type='point'))
 
-    find_closest(1000, seed_img, img_containers, output_dir, step=600)
+    find_closest(250, seed_img, img_containers, output_dir, step=600)
 
 
 
