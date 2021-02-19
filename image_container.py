@@ -9,7 +9,7 @@ class ImageContainer:
         self.width = len(self.img[0])
         self.rectangles = []
         self.params = set()
-        self.param_type='all'
+        self.param_type=param_type
 
     def add_rectangle(self, x1, y1, x2, y2):
         self.rectangles.append([x1, y1, x2, y2])
@@ -17,6 +17,8 @@ class ImageContainer:
     def add_params(self, params):
         if self.param_type == 'all':
             self.params.add((params[0][0], params[0][1], params[1], params[2]))
+        elif self.param_type == 'point':
+            self.params.add((params[0][0], params[0][1]))
         else:
             raise ValueError("Unsupported param type: {}".format(self.param_type))
 

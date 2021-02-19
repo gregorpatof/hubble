@@ -69,23 +69,20 @@ def scan_image_helper(target_image, img_container, grid, angle, flip,
     return min_dist, best_match, best_params
 
 
-
 def get_distance(img1, img2):
     diff = img1-img2
     dist = np.multiply(diff, diff)
     return np.sum(dist)/(dist.size*255)
 
 
-
-
-def find_closest(n_closest, starting_image, img_containers, remove_rectangle=False, n_procs = 4):
+def find_closest(n_closest, starting_image, img_containers, remove_rectangle=False, step=300):
     closest = [starting_image]
     dists = [0]
     current_image = starting_image
     for i in range(1, n_closest):
         results = []
         for img_container in img_containers:
-            results.append(scan_image(current_image, img_container, remove_rectangle=remove_rectangle))
+            results.append(scan_image(current_image, img_container, remove_rectangle=remove_rectangle, step=step))
         # results = p.starmap(scan_image, zip(repeat(current_image), img_containers))
         min_dist, best_img, best_params, best_j = get_best_result(results)
         img_containers[best_j].add_params(best_params)
@@ -117,7 +114,7 @@ if __name__ == "__main__":
     img = cv.imread("raw_images/heic1307a.tif")
     print("img loaded")
     # rotated = make_rotated(img)
-    img_containers = [ImageContainer(img)]
+    img_containers = [ImageContainer(img, param_type='point')]
     x_length = 720
     y_length = 1280
     # x1_main = int(len(img)/2)-1600
