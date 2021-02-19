@@ -74,10 +74,12 @@ def get_distance(img1, img2):
     return np.sum(dist)/(dist.size*255)
 
 
-def find_closest(n_closest, starting_image, img_containers, remove_rectangle=False, step=300):
+def find_closest(n_closest, starting_image, img_containers, output_dir, remove_rectangle=False, step=300):
     closest = [starting_image]
     dists = [0]
     current_image = starting_image
+    write_image(output_dir, current_image, 0)
+    write_dist(output_dir, 0.0, 0, overwrite=True)
     for i in range(1, n_closest):
         results = []
         for img_container in img_containers:
@@ -85,11 +87,26 @@ def find_closest(n_closest, starting_image, img_containers, remove_rectangle=Fal
         # results = p.starmap(scan_image, zip(repeat(current_image), img_containers))
         min_dist, best_img, best_params, best_j = get_best_result(results)
         img_containers[best_j].add_params(best_params)
-        closest.append(best_img)
-        dists.append(min_dist)
-        print(i, min_dist)
+        write_image(output_dir, best_img, i)
+        write_dist(output_dir, min_dist, i)
+        # closest.append(best_img)
+        # dists.append(min_dist)
         current_image = best_img
     return closest, dists
+
+
+def write_image(output_dir, img, i):
+    cv.imwrite("{}/{:04d}.tif".format(output_dir, i), img)
+
+
+def write_dist(output_dir, dist, i, overwrite=False):
+    fn = "{}/dists.txt".format(output_dir)
+    if overwrite:
+        with open(fn, 'w') as f:
+            f.write('{} {}\n'.format(i, dist))
+        return
+    with open(fn, 'a') as f:
+        f.write('{} {}\n'.format(i, dist))
 
 
 def get_best_result(results):
@@ -152,6 +169,29 @@ if __name__ == "__main__":
     for filename in filenames:
         write_cut_images(filename)
     move_limit_images_back()
+
+    seed_filename = sys.argv[1]
+    name = seed_filename.split('/')[-1].split('_')[0]
+    if not os.path.isdir('output'):
+        os.mkdir('output')
+    output_dir = 'output/{}'.format(seed_filename.split('/')[-1].split('.')[0])
+    if not os.path.isdir(output_dir):
+        os.mkdir('output/{}'.format(seed_filename.split('/')[-1].split('.')[0]))
+
+
+    seed_img = cv.imread(seed_filename)
+    cut_images_fns = glob.glob("cut_images/{}*".format(name))
+    img_containers = []
+    for cut_image_fn in cut_images_fns:
+        img_containers.append(ImageContainer(cv.imread(cut_image_fn), param_type='point'))
+
+    find_closest(1000, seed_img, img_containers, output_dir, step=600)
+
+
+
+
+
+
 
     # img_containers = [ImageContainer(img, param_type='point')]
 
