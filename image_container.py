@@ -3,14 +3,22 @@ import cv2 as cv
 
 class ImageContainer:
 
-    def __init__(self, img):
+    def __init__(self, img, param_type='all'):
         self.img = img
         self.height = len(self.img)
         self.width = len(self.img[0])
         self.rectangles = []
+        self.params = set()
+        self.param_type='all'
 
     def add_rectangle(self, x1, y1, x2, y2):
         self.rectangles.append([x1, y1, x2, y2])
+
+    def add_params(self, params):
+        if self.param_type == 'all':
+            self.params.add((params[0][0], params[0][1], params[1], params[2]))
+        else:
+            raise ValueError("Unsupported param type: {}".format(self.param_type))
 
     def get_sub_img(self, x1, y1, x2, y2):
         for rect in self.rectangles:
@@ -19,6 +27,8 @@ class ImageContainer:
         return self.img[x1:x2, y1:y2]
 
     def get_sub_img_rotated_rect(self, center, angle, flipped=False, height=720, width=1280):
+        if (center[0], center[1], angle, flipped) in self.params:
+            return None
         corners = get_rotated_corners(center, angle, height, width)
         if not self.contain(corners):
             return None
@@ -30,7 +40,6 @@ class ImageContainer:
             [int(top_right[0]), int(top_right[1])],
             [int(bottom_right[0]), int(bottom_right[1])]
         ])
-        print(cnt)
         rect = cv.minAreaRect(cnt)
         # return self.crop_minAreaRect(rect)
         box = cv.boxPoints(rect)
@@ -38,7 +47,6 @@ class ImageContainer:
 
         r_width = int(rect[1][0])
         r_height = int(rect[1][1])
-        print(r_height, r_width)
 
         src_points = box
         src_points = np.array(box, dtype="float32")
@@ -58,26 +66,10 @@ class ImageContainer:
         if flipped:
             warped = cv.rotate(warped.copy(), cv.ROTATE_180)
         warped = warped[:720, :1280]
-        return warped
+        if warped.shape == (720, 1280, 3):
+            return warped
+        return None
 
-    def crop_minAreaRect(self, rect):
-        img = self.img
-        angle = rect[2]
-        rows, cols = img.shape[0], img.shape[1]
-        M = cv.getRotationMatrix2D((cols / 2, rows / 2), angle, 1)
-        img_rot = cv.warpAffine(img, M, (cols, rows))
-
-        # rotate bounding box
-        rect0 = (rect[0], rect[1], 0.0)
-        box = cv.boxPoints(rect0)
-        pts = np.intp(cv.transform(np.array([box]), M))[0]
-        pts[pts < 0] = 0
-
-        # crop
-        img_crop = img_rot[pts[1][1]:pts[0][1],
-                   pts[1][0]:pts[2][0]]
-
-        return img_crop
 
     def contain(self, corners):
         for c in corners:
@@ -109,10 +101,8 @@ def get_rotated_corners(center, angle, height, width, offset=2):
     top_right = [cx - h_over2, cy + w_over2]
     bottom_right = [cx + h_over2, cy + w_over2]
     corners = [bottom_left, top_left, top_right, bottom_right]
-    print("corners", corners)
     for i, c in enumerate(corners):
         corners[i] = rotate(corners[i], center, angle)
-    print("rotated corners", corners)
     return corners
 
 
