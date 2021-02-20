@@ -243,14 +243,20 @@ if __name__ == "__main__":
     if not os.path.isdir(output_dir):
         os.mkdir('output/{}'.format(seed_filename.split('/')[-1].split('.')[0]))
 
+    # ############### for using cut images
+    # seed_img = cv.imread(seed_filename)
+    # cut_images_fns = glob.glob("cut_images/{}*".format(name))
+    # img_containers = []
+    # for cut_image_fn in cut_images_fns:
+    #     img_containers.append(ImageContainer(cv.imread(cut_image_fn), param_type='point'))
 
+    # ################ for whole images
     seed_img = cv.imread(seed_filename)
-    cut_images_fns = glob.glob("cut_images/{}*".format(name))
-    img_containers = []
-    for cut_image_fn in cut_images_fns:
-        img_containers.append(ImageContainer(cv.imread(cut_image_fn), param_type='point'))
+    img_filename = glob.glob("raw_images/{}*.tif".format(name))
+    assert len(img_filename) == 1
+    img_containers = [ImageContainer(cv.imread(img_filename[0]), param_type='point')]
 
-    find_closest(250, seed_img, img_containers, output_dir, step=600)
+    find_closest(500, seed_img, img_containers, output_dir, step=600)
 
 
 
