@@ -228,7 +228,7 @@ if __name__ == "__main__":
     #     write_cut_images(filename)
     # move_limit_images_back()
 
-    make_jobs()
+    # make_jobs()
 
     # generate_seeds()
 
