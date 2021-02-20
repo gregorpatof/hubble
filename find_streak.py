@@ -228,9 +228,9 @@ if __name__ == "__main__":
     #     write_cut_images(filename)
     # move_limit_images_back()
 
-    # make_jobs()
+    make_jobs()
 
-    generate_seeds()
+    # generate_seeds()
 
     if len(sys.argv) != 2:
         raise ValueError("I need 1 arg, the seed filename")
