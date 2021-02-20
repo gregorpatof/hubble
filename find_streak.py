@@ -194,15 +194,13 @@ def print_bad_seeds():
 
 
 def generate_seeds():
-    filenames = glob.glob('raw_files/*.tif')
+    filenames = glob.glob('raw_images/*.tif')
     for filename in filenames:
         name = filename.split('/')[-1].split('.')[0]
         seeds = glob.glob('seeds/{}*.tif*'.format(name))
         if len(seeds) == 0:
             generate_seed(filename, name)
-        else:
-            print(name)
-            print(seeds)
+
 
 
 def generate_seed(filename, name):
