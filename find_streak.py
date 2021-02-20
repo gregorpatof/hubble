@@ -120,6 +120,8 @@ def get_best_result(results):
             best_img = r[1]
             best_coords = r[2]
             best_j = j
+    if best_j is None:
+
     return min_dist, best_img, best_coords, best_j
 
 
