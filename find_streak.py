@@ -185,6 +185,14 @@ python find_streak.py {}
             f.write("sbatch {}\n".format(jobname))
 
 
+def print_bad_seeds():
+    seeds = glob.glob('seeds/*.tiff')
+    for seed in seeds:
+        img = cv.imread(seed)
+        if img.shape != (720, 1280, 3):
+            print(seed, img.shape[0], img.shape[1])
+
+
 
 
 
@@ -199,6 +207,8 @@ if __name__ == "__main__":
     # move_limit_images_back()
 
     # make_jobs()
+
+    print_bad_seeds()
 
     if len(sys.argv) != 2:
         raise ValueError("I need 1 arg, the seed filename")
