@@ -200,6 +200,9 @@ def generate_seeds():
         seeds = glob.glob('seeds/{}*.tif*'.format(name))
         if len(seeds) == 0:
             generate_seed(filename, name)
+        else:
+            print(name)
+            print(seeds)
 
 
 def generate_seed(filename, name):
