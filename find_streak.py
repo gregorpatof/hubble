@@ -209,7 +209,7 @@ def generate_seed(filename, name):
     for c in ['a', 'b', 'c', 'd']:
         x = random.randint(0, img.shape[0]-721)
         y = random.randint(0, img.shape[1]-1281)
-        cv.imwrite('seeds/{}_{}.tiff'.format(name, c), img[x:x+720, y:y+1280])
+        cv.imwrite('seeds/{}_seed{}.tiff'.format(name, c), img[x:x+720, y:y+1280])
 
 
 
