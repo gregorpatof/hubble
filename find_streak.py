@@ -186,11 +186,32 @@ python find_streak.py {}
 
 
 def print_bad_seeds():
-    seeds = glob.glob('seeds/*.tiff')
+    seeds = glob.glob('seeds/*.tif*')
     for seed in seeds:
         img = cv.imread(seed)
         if img.shape != (720, 1280, 3):
             print(seed, img.shape[0], img.shape[1])
+
+
+def generate_seeds():
+    filenames = glob.glob('raw_files/*.tif')
+    for filename in filenames:
+        name = filename.split('/')[-1].split('.')[0]
+        seeds = glob.glob('seeds/{}*.tif*'.format(name))
+        if len(seeds) == 0:
+            generate_seed(filename, name)
+
+
+def generate_seed(filename, name):
+    img = cv.imread(filename)
+    if img.shape[0] < 3000 or img.shape[1] < 3000:
+        return
+    for c in ['a', 'b', 'c', 'd']:
+        x = random.randint(0, img.shape[0]-721)
+        y = random.randint(0, img.shape[1]-1281)
+        cv.imwrite('seeds/{}_{}.tiff'.format(name, c), img[x:x+720, y:y+1280])
+
+
 
 
 
@@ -208,7 +229,7 @@ if __name__ == "__main__":
 
     # make_jobs()
 
-    print_bad_seeds()
+    generate_seeds()
 
     if len(sys.argv) != 2:
         raise ValueError("I need 1 arg, the seed filename")
