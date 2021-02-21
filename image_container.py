@@ -86,8 +86,6 @@ class ImageContainer:
         return True
 
 
-
-
 def rectangles_overlap(l1x, l1y, r1x, r1y, l2x, l2y, r2x, r2y):
     # If one rectangle is on left side of other
     if l1x >= r2x or l2x >= r1x:

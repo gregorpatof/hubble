@@ -158,33 +158,6 @@ def move_limit_images_back():
             shutil.copyfile(filenames[0], "cut_images/{}_0.tif".format(key))
 
 
-def make_jobs():
-    seeds = glob.glob('seeds/*.tiff')
-    jobnames = []
-    for seed in seeds:
-        name = seed.split('/')[-1][:-5]
-        jobname = "job_{}.sh".format(name)
-        jobnames.append(jobname)
-        with open("jobs/{}".format(jobname), "w") as f:
-            f.write("""#!/bin/bash
-#SBATCH --ntasks=40
-#SBATCH --nodes=1
-#SBATCH --exclusive
-#SBATCH --output=SLURM-%x.%j.out
-#SBATCH --error=SLURM-%x.%j.err
-#SBATCH --mem=0
-#SBATCH --time=24:00:00
-#SBATCH --account=rrg-najmanov
-module purge
-source ~/py_env/bin/activate
-cd ..
-python find_streak.py {}
-""".format(seed))
-    with open("jobs/start_jobs.sh", "w") as f:
-        for jobname in jobnames:
-            f.write("sbatch {}\n".format(jobname))
-
-
 def print_bad_seeds():
     seeds = glob.glob('seeds/*.tif*')
     for seed in seeds:
@@ -202,7 +175,6 @@ def generate_seeds():
             generate_seed(filename, name)
 
 
-
 def generate_seed(filename, name):
     img = cv.imread(filename)
     if img.shape[0] < 3000 or img.shape[1] < 3000:
@@ -213,22 +185,11 @@ def generate_seed(filename, name):
         cv.imwrite('seeds/{}_seed{}.tiff'.format(name, c), img[x:x+720, y:y+1280])
 
 
-
-
-
-
-
-
-
-
-
 if __name__ == "__main__":
     # filenames = glob.glob("raw_images/*.tif")
     # for filename in filenames:
     #     write_cut_images(filename)
     # move_limit_images_back()
-
-    # make_jobs()
 
     # generate_seeds()
 
@@ -257,9 +218,6 @@ if __name__ == "__main__":
     img_containers = [ImageContainer(cv.imread(img_filename[0]), param_type='point')]
 
     find_closest(500, seed_img, img_containers, output_dir, step=600)
-
-
-
 
 
 
