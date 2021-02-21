@@ -25,7 +25,6 @@ class ImageContainer:
         else:
             raise ValueError("Unsupported param type: {}".format(self.param_type))
 
-
     def get_sub_img(self, x1, y1, x2, y2):
         for rect in self.rectangles:
             if rectangles_overlap(x1, y1, x2, y2, rect[0], rect[1], rect[2], rect[3]):
@@ -47,14 +46,12 @@ class ImageContainer:
             [int(bottom_right[0]), int(bottom_right[1])]
         ])
         rect = cv.minAreaRect(cnt)
-        # return self.crop_minAreaRect(rect)
         box = cv.boxPoints(rect)
         box = np.intp(box)
 
         r_width = int(rect[1][0])
         r_height = int(rect[1][1])
 
-        src_points = box
         src_points = np.array(box, dtype="float32")
 
         dst_points = np.array([[0, r_height-1],
@@ -65,9 +62,6 @@ class ImageContainer:
         M = cv.getPerspectiveTransform(src_points, dst_points)
         warped = cv.warpPerspective(self.img, M, (r_width, r_height))
         if len(warped) > len(warped[0]):
-            # rot = cv.ROTATE_90_CLOCKWISE
-            # if angle > np.pi:
-            #     rot = cv.ROTATE_90_COUNTERCLOCKWISE
             warped = cv.rotate(warped.copy(), cv.ROTATE_90_CLOCKWISE)
         if flipped:
             warped = cv.rotate(warped.copy(), cv.ROTATE_180)
@@ -75,7 +69,6 @@ class ImageContainer:
         if warped.shape == (720, 1280, 3):
             return warped
         return None
-
 
     def contain(self, corners):
         for c in corners:

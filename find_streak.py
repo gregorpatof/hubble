@@ -8,8 +8,6 @@ import shutil
 import os
 import random
 from image_container import ImageContainer
-from multiprocessing import Pool
-from itertools import repeat
 from stringfish import strexe
 
 
@@ -51,8 +49,6 @@ def scan_image(target_image, img_container, remove_rectangle=False,
 
 def scan_image_helper(target_image, img_container, grid, angle, flip,
                       x_length=720, y_length=1280):
-    """ scan_coords = [x_start, x_end, y_start, y_end]
-    """
     min_dist = float('inf')
     best_match = None
     best_params = []
@@ -84,13 +80,10 @@ def find_closest(n_closest, starting_image, img_containers, output_dir, remove_r
         results = []
         for img_container in img_containers:
             results.append(scan_image(current_image, img_container, remove_rectangle=remove_rectangle, step=step))
-        # results = p.starmap(scan_image, zip(repeat(current_image), img_containers))
         min_dist, best_img, best_params, best_j = get_best_result(results)
         img_containers[best_j].add_params(best_params)
         write_image(output_dir, best_img, i)
         write_dist(output_dir, min_dist, i)
-        # closest.append(best_img)
-        # dists.append(min_dist)
         current_image = best_img
     return closest, dists
 
@@ -186,11 +179,13 @@ def generate_seed(filename, name):
 
 
 if __name__ == "__main__":
+    # ############ making cut images
     # filenames = glob.glob("raw_images/*.tif")
     # for filename in filenames:
     #     write_cut_images(filename)
     # move_limit_images_back()
 
+    # ############## generating random seeds
     # generate_seeds()
 
     if len(sys.argv) != 2:
