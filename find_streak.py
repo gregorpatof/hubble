@@ -11,6 +11,9 @@ from image_container import ImageContainer
 from stringfish import strexe
 
 
+# Authors : Florence C.-Paradis and Olivier Mailhot, 2021
+
+
 def get_sub_rectangle(img, x, y, x_length=720, y_length=1280, angle=0):
     if angle==0:
         return img[x:x+x_length, y:y+y_length]

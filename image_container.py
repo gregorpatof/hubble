@@ -1,6 +1,9 @@
 import numpy as np
 import cv2 as cv
 
+
+# Authors : Florence C.-Paradis and Olivier Mailhot, 2021
+
 class ImageContainer:
 
     def __init__(self, img, param_type='all'):
