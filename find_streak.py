@@ -38,7 +38,6 @@ def make_grid(img_container, step, x_length=720, y_length=1280):
     return grid
 
 
-
 def scan_image(target_image, img_container, remove_rectangle=False,
                x_length=720, y_length=1280, step=100):
     grid = make_grid(img_container, step, x_length, y_length)
@@ -216,10 +215,5 @@ if __name__ == "__main__":
     img_containers = [ImageContainer(cv.imread(img_filename[0]), param_type='point')]
 
     find_closest(500, seed_img, img_containers, output_dir, step=600)
-
-
-
-
-
 
 
